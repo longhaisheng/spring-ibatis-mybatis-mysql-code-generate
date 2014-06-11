@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper
+	namespace="${domain.packageName}.${domain.className?substring(0,len)}Mapper">
+
+	<resultMap type="${complete_package_class_name}" id="studentResultMap"
+		autoMapping="true">
+		<result property="studentName" column="STUDENT_NAME" />
+		<result property="studentSex" column="STUDENT_SEX" />
+		<result property="studentBirthday" column="STUDENT_BIRTHDAY" />
+	</resultMap>
+
+	<select id="getStudent" parameterType="String" resultMap="studentResultMap">
+		<include refid="selectStudentAll" />
+		WHERE ST.STUDENT_ID = #{studentID}
+	</select>
+
+	<sql id=""></sql>
+
+	<!-- 查询学生，根据id -->
+	<select id="getStudentById" parameterType="String" resultType="StudentEntity"
+		pa resultMap="studentResultMap">
+        <![CDATA[
+            SELECT * from STUDENT_TBL ST
+                WHERE ST.STUDENT_ID = #{studentID}
+        ]]>
+	</select>
+
+	<!-- 查询学生列表 -->
+	<select id="getStudentAll" resultType="com.manager.data.model.StudentEntity"
+		resultMap="studentResultMap">
+        <![CDATA[
+            SELECT * from STUDENT_TBL
+        ]]>
+	</select>
+
+	<insert id="insertStudentAutoKey" parameterType="StudentEntity">
+		<selectKey keyProperty="studentID" resultType="String"
+			order="BEFORE">
+			select nextval('student')
+    </selectKey>
+		INSERT INTO STUDENT_TBL (STUDENT_ID,
+		STUDENT_NAME,
+		STUDENT_SEX,
+		STUDENT_BIRTHDAY,
+		CLASS_ID)
+		VALUES (#{studentID},
+		#{studentName},
+		#{studentSex},
+		#{studentBirthday},
+		#{classEntity.classID})
+	</insert>
+
+
+	<update id="updateStudent" parameterType="StudentEntity">
+		UPDATE STUDENT_TBL
+		SET
+		STUDENT_TBL.STUDENT_NAME = #{studentName},
+		STUDENT_TBL.STUDENT_SEX =
+		#{studentSex},
+		STUDENT_TBL.STUDENT_BIRTHDAY = #{studentBirthday},
+		STUDENT_TBL.CLASS_ID = #{classEntity.classID}
+		WHERE
+		STUDENT_TBL.STUDENT_ID = #{studentID};
+</update>
+
+
+	<delete id="deleteStudent" parameterType="StudentEntity">
+		DELETE FROM STUDENT_TBL
+		WHERE STUDENT_ID = #{studentID}
+</delete>
+
+	<select id="getStudentListWhereParam" resultMap="studentResultMap">
+		SELECT * from STUDENT_TBL ST
+		<where>
+			<if test="name!=null and name!='' ">
+				ST.STUDENT_NAME LIKE CONCAT(CONCAT('%', #{name}),'%')
+			</if>
+			<if test="sex!= null and sex!= '' ">
+				AND ST.STUDENT_SEX = #{sex}
+        	</if>
+			<if test="birthday!=null">
+				AND ST.STUDENT_BIRTHDAY = #{birthday}
+        	</if>
+			<if
+				test="classEntity!=null and classEntity.classID !=null and classEntity.classID!='' ">
+				AND ST.CLASS_ID = #{classEntity.classID}
+        	</if>
+		</where>
+	</select>
+
+	<update id="updateStudent_if_set" parameterType="liming.student.manager.data.model.StudentEntity">
+		UPDATE STUDENT_TBL
+		<set>
+			<if test="studentName != null and studentName != '' ">
+				STUDENT_TBL.STUDENT_NAME = #{studentName},
+        </if>
+			<if test="studentSex != null and studentSex != '' ">
+				STUDENT_TBL.STUDENT_SEX = #{studentSex},
+        </if>
+			<if test="studentBirthday != null ">
+				STUDENT_TBL.STUDENT_BIRTHDAY = #{studentBirthday},
+        </if>
+			<if test="studentPhoto != null ">
+				STUDENT_TBL.STUDENT_PHOTO = #{studentPhoto,
+				javaType=byte[], jdbcType=BLOB,
+				typeHandler=org.apache.ibatis.type.BlobTypeHandler},
+        </if>
+			<if test="classId != '' ">
+				STUDENT_TBL.CLASS_ID = #{classId}
+        </if>
+			<if test="placeId != '' ">
+				STUDENT_TBL.PLACE_ID = #{placeId}
+        </if>
+		</set>
+		WHERE STUDENT_TBL.STUDENT_ID = #{studentId};
+	</update>
+
+	<select id="getStudentList_if_trim" resultMap="resultMap_studentEntity">
+		SELECT ST.STUDENT_ID,
+		ST.STUDENT_NAME,
+		ST.STUDENT_SEX,
+		ST.STUDENT_BIRTHDAY,
+		ST.STUDENT_PHOTO,
+		ST.CLASS_ID,
+		ST.PLACE_ID
+		FROM
+		STUDENT_TBL ST
+		<trim prefix="WHERE" prefixOverrides="AND|OR">
+			<if test="studentName !=null ">
+				ST.STUDENT_NAME LIKE CONCAT(CONCAT('%', #{studentName,
+				jdbcType=VARCHAR}),'%')
+        </if>
+			<if test="studentSex != null and studentSex != '' ">
+				AND ST.STUDENT_SEX = #{studentSex, jdbcType=INTEGER}
+        </if>
+			<if test="studentBirthday != null ">
+				AND ST.STUDENT_BIRTHDAY = #{studentBirthday,
+				jdbcType=DATE}
+        </if>
+			<if test="classId != null and classId!= '' ">
+				AND ST.CLASS_ID = #{classId, jdbcType=VARCHAR}
+        </if>
+			<if
+				test="classEntity != null and classEntity.classId !=null and classEntity.classId !=' ' ">
+				AND ST.CLASS_ID = #{classEntity.classId, jdbcType=VARCHAR}
+        </if>
+			<if test="placeId != null and placeId != '' ">
+				AND ST.PLACE_ID = #{placeId, jdbcType=VARCHAR}
+        </if>
+			<if
+				test="placeEntity != null and placeEntity.placeId != null and placeEntity.placeId != '' ">
+				AND ST.PLACE_ID = #{placeEntity.placeId, jdbcType=VARCHAR}
+        </if>
+			<if test="studentId != null and studentId != '' ">
+				AND ST.STUDENT_ID = #{studentId, jdbcType=VARCHAR}
+        </if>
+		</trim>
+	</select>
+
+</mapper>
